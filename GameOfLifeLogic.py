@@ -1,4 +1,5 @@
-import comtrolsAPI
+import controlsAPI
+
 
 def empty_table(width, length):
     return [[False] * width] * length
@@ -41,8 +42,8 @@ def life_step(table, generation, rule=((3,), (2, 3))):
 
 
 class SelectorTable:
-    def __init__(self, width, length):
-        self._table = empty_table(width, length)
+    def __init__(self, width, length, table=None):
+        self._table = empty_table(width, length) if table is None else table
         self.position = [0, 0]
 
     def move_up(self):
@@ -71,10 +72,14 @@ class SelectorTable:
         del self._table
         del self
 
+    def exit_to_run_mode(self):
+        return RunnerTable(self._table)
+
     table = property(get_table, set_table, del_table)
+    # TODO: Interface with the API is to redo
 
     def edit_loop(self, draw_callback=None):
-        command_calls_mode_edit: set = comtrolsAPI.keys_to_API('EDIT')
+        command_calls_mode_edit: set = controlsAPI.keys_to_API('EDIT')
         while 'quit' not in command_calls_mode_edit:
             if 'up' in command_calls_mode_edit:
                 self.move_up()
@@ -88,6 +93,12 @@ class SelectorTable:
                 self.change_state()
             if draw_callback is not None:
                 draw_callback(self.table)
+
+
+# TODO: make the table runner logic
+class RunnerTable:
+    def __init__(self, table):
+        self._table = table
 
 
 if __name__ == '__main__':
