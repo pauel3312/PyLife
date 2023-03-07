@@ -1,5 +1,4 @@
-commands_calls = {'quit': False, 'up': False,  'left': False,  'down': False,  'right': False,  'change': False, }
-
+import comtrolsAPI
 
 def empty_table(width, length):
     return [[False] * width] * length
@@ -61,16 +60,13 @@ class SelectorTable:
     def change_state(self):
         self._table[self.position[0]][self.position[1]] = not self._table[self.position[0]][self.position[1]]
 
-    # function to get value of _age
     def get_table(self):
         return self._table
 
-    # function to set value of _age
     def set_table(self, a):
         print("WARNING: Table not default")
         self._table = a
 
-    # function to delete _age attribute
     def del_table(self):
         del self._table
         del self
@@ -78,17 +74,17 @@ class SelectorTable:
     table = property(get_table, set_table, del_table)
 
     def edit_loop(self, draw_callback=None):
-        global commands_calls
-        while not commands_calls['quit']:
-            if commands_calls['up']:
+        command_calls_mode_edit: set = comtrolsAPI.keys_to_API('EDIT')
+        while 'quit' not in command_calls_mode_edit:
+            if 'up' in command_calls_mode_edit:
                 self.move_up()
-            if commands_calls['left']:
+            if 'left' in command_calls_mode_edit:
                 self.move_left()
-            if commands_calls['down']:
+            if 'down' in command_calls_mode_edit:
                 self.move_down()
-            if commands_calls['right']:
+            if 'right' in command_calls_mode_edit:
                 self.move_right()
-            if commands_calls['change']:
+            if 'change' in command_calls_mode_edit:
                 self.change_state()
             if draw_callback is not None:
                 draw_callback(self.table)
