@@ -76,7 +76,6 @@ class SelectorTable:
         return RunnerTable(self._table)
 
     table = property(get_table, set_table, del_table)
-    # TODO: Interface with the API is to redo
 
     def edit_loop(self, draw_callback=None):
         command_calls_mode_edit: set = controlsAPI.keys_to_API('EDIT')

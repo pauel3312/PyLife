@@ -1,11 +1,38 @@
 import keyboard
 
 pressed_keys_set = set()
+API_calls_set = set()
+transform_EDIT = {
+    'haut': 'up',
+    'z': 'up',
+    'gauche': 'left',
+    'q': 'left',
+    'bas': 'down',
+    's': 'down',
+    'droite': 'right',
+    'd': 'right',
+    'space': 'change',
+    'enter': 'change_mode',
+    'esc': 'quit'}
+transform_RUN = {
+    "ctrl": "autorun",
+    'space': 'step',
+    'enter': 'change_mode',
+    'esc': 'quit'}
 
 
-# TODO: transform method for the set to meet the API command spec
 def keys_to_API(mode):
-    print(mode)
+    transform(mode)
+    return API_calls_set
+
+
+def transform(mode):
+    global API_calls_set
+    API_calls_set = set()
+    used_transformation = eval(f"transform_{mode}")
+    for key in pressed_keys_set:
+        if key in used_transformation:
+            API_calls_set.add(used_transformation[key])
 
 
 def keypress_callback(key):
@@ -20,4 +47,4 @@ keyboard.hook(keypress_callback)
 
 if __name__ == '__main__':
     while True:
-        print(pressed_keys_set)
+        print(keys_to_API("EDIT"))
