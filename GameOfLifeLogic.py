@@ -90,14 +90,37 @@ class SelectorTable:
                 self.move_right()
             if 'change' in command_calls_mode_edit:
                 self.change_state()
+            if 'change_mode' in command_calls_mode_edit:
+                RunnerTable(table=self._table, draw_function=draw_callback).main_loop()
             if draw_callback is not None:
                 draw_callback(self.table)
 
 
-# TODO: make the table runner logic
 class RunnerTable:
-    def __init__(self, table):
+    def __init__(self, table, draw_function=None):
         self._table = table
+        self.generation = 0
+        self.population = get_population(self._table)
+        self.draw_function = draw_function
+
+    def step(self):
+        self._table, self.generation, self.population = life_step(self._table, self.generation)
+        if self.draw_function is not None:
+            self.draw_function(self)
+
+    def autorun(self):
+        while 'autorun' not in controlsAPI.keys_to_API('RUN'):
+            self.step()
+
+    def main_loop(self):
+        commands = controlsAPI.keys_to_API('RUN')
+        while 'quit' not in commands:
+            for key in commands:
+                match key:
+                    case 'autorun': self.autorun()
+                    case 'step': self.step()
+                    case 'change_mode': SelectorTable(0, 0, table=self._table)\
+                        .edit_loop(draw_callback=self.draw_function)
 
 
 if __name__ == '__main__':
