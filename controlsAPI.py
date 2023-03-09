@@ -35,8 +35,9 @@ def transform(mode):
             API_calls_set.add(used_transformation[key])
 
 
-def keypress_callback(key):
-    string_key, string_event = str(key).split('(')[1].strip(')').split(' ')
+def keypress_callback(key: keyboard.KeyboardEvent):
+    string_key = key.name
+    string_event = str(key).split(' ')[-1].removesuffix(')')
     if string_event == 'up' and string_key in pressed_keys_set:
         pressed_keys_set.discard(string_key)
     elif string_event == 'down' and string_key not in pressed_keys_set:
