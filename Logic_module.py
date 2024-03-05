@@ -1,12 +1,12 @@
-def empty_table(width, length):
-    empty_width_list = [False] * width
+def empty_table(width: int, length: int) -> list[list[bool]]:
+    empty_line = [False] * width
     table = []
     for i in range(length):
-        table.append(empty_width_list.copy())
+        table.append(empty_line.copy())
     return table
 
 
-def get_number_of_live_neighbours(coordinates: tuple, table):
+def get_number_of_live_neighbours(coordinates: tuple[int, int], table: list[list[int]]) -> int:
     length = len(table)
     width = len(table[0])
     x, y = coordinates
@@ -18,7 +18,7 @@ def get_number_of_live_neighbours(coordinates: tuple, table):
     return number_of_live_neighbours
 
 
-def get_population(table):
+def get_population(table: list[list[int]]) -> int:
     population_counter = 0
     for line in table:
         for cell in line:
@@ -27,7 +27,10 @@ def get_population(table):
     return population_counter
 
 
-def life_step(table, generation, rule=((3,), (2, 3))):
+def life_step(table: list[list[int]],
+              generation: int,
+              rule: tuple[tuple[int]] = ((3,), (2, 3))
+              ) -> tuple[list[list[int]], int, int]:
     new_table = []
     for x, line in enumerate(table):
         new_table.append([])
