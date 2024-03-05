@@ -1,0 +1,1 @@
+This project is essentially a PC port of a program I wrote on my NumWorks calculator. The current GUI is therefore not optimized for PC at all. Everything is done via keyboard and it is a pain to use, and it takes ages to launch. I am redoing the GUI to allow for easier and faster use on PC.
