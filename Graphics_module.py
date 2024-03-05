@@ -1,7 +1,7 @@
 import time
 import tkinter as tk
-import GameOfLifeLogic
-import controlsAPI
+import Logic_module
+import Controls_module_KB
 
 window = tk.Tk()
 window.configure(background='#000')
@@ -58,26 +58,26 @@ def update_grid(table: list[list[bool]], update: bool = True):
 # TODO: do the legend (population, generation and mode)
 
 def run_loop(table: list[list[bool]]):
-    controls = controlsAPI.keys_to_API('RUN')
+    controls = Controls_module_KB.keys_to_API('RUN')
     auto_run = False
     gen = 0
     while 'quit' not in controls:
         if auto_run:
-            table, gen, pop = GameOfLifeLogic.life_step(table, gen)
+            table, gen, pop = Logic_module.life_step(table, gen)
             update_grid(table)
         elif 'step' in controls:
-            table, gen, pop = GameOfLifeLogic.life_step(table, gen)
+            table, gen, pop = Logic_module.life_step(table, gen)
             update_grid(table)
         if 'autorun' in controls:
             auto_run = not auto_run
             time.sleep(.2)
         if 'change_mode' in controls:
             edit_loop(table)
-        controls = controlsAPI.keys_to_API('RUN')
+        controls = Controls_module_KB.keys_to_API('RUN')
 
 
 def edit_loop(table: list[list[bool]]):
-    controls = controlsAPI.keys_to_API('EDIT')
+    controls = Controls_module_KB.keys_to_API('EDIT')
     selector = [0, 0]
     while 'quit' not in controls:
         for key in controls:
@@ -89,7 +89,7 @@ def edit_loop(table: list[list[bool]]):
                 case 'change':
                     table[selector[0]][selector[1]] = not table[selector[0]][selector[1]]
                 case 'change_mode': run_loop(table)
-        controls = controlsAPI.keys_to_API('EDIT')
+        controls = Controls_module_KB.keys_to_API('EDIT')
         update_grid(table, False)
         draw_selector(selector, table[selector[0]][selector[1]])
         window.update()
@@ -101,7 +101,8 @@ def draw_selector(selector: list[int], is_on: bool):
     current_frame['background'] = COLOR_ON_SELECTOR if is_on else COLOR_OFF_SELECTOR
 
 
-create_grid(GameOfLifeLogic.empty_table(40, 40))
-edit_loop(GameOfLifeLogic.empty_table(40, 40))
+if __name__ == "__main__":
+    create_grid(Logic_module.empty_table(40, 40))
+    edit_loop(Logic_module.empty_table(40, 40))
 
-window.mainloop()
+    window.mainloop()
