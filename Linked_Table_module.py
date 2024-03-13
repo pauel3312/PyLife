@@ -3,10 +3,10 @@ from typing import Optional
 
 class LinkedTableNode:
     def __init__(self, state: bool = False, hooked: Optional[set["LinkedTableNode"]] = None) -> None:
-        if hooked is None:
-            self.hooked: set["LinkedTableNode"] = set()
-        elif len(hooked) <= 8:
-            self.hooked: set["LinkedTableNode"] = hooked
+        self.hooked: set["LinkedTableNode"] = set()
+        if hooked is not None and len(hooked) <= 8:
+            for node in hooked:
+                node.hook(self)
         else:
             raise ValueError("The set of hooked nodes is too large")
         self.state: bool = state
@@ -104,7 +104,13 @@ def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
         adjacent_edges = {current_edge}
         for potential_edge in current_edge.hooked:
             if int(potential_edge) >= 5:
-                adjacent_edges
+                adjacent_edges.add(potential_edge)
+                if potential_edge not in edges_done:
+                    edges_to_do.add(potential_edge)
+            new_edge = LinkedTableNode(hooked=adjacent_edges)
+            edges_done.add(new_edge)
+            base.add(new_edge)
+    return base
 
 
 if __name__ == "__main__":
