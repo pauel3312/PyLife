@@ -83,5 +83,29 @@ def create_square(side_length: int) -> LinkedTableCoordSystem:
     return LinkedTableCoordSystem(origin, up, left)
 
 
+def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
+    corners: set[LinkedTableNode] = set()
+    edges_to_do = set()
+    for potential_corner in base:
+        if int(potential_corner) == 3:
+            corners.add(potential_corner)
+            potential_corner.hook(LinkedTableNode())
+            for potential_edge in potential_corner.hooked:
+                if int(potential_edge) == 5:
+                    edges_to_do.add(potential_edge)
+
+    if len(corners) != 4:
+        raise ValueError('Invalid input base: does not have 4 corners.')
+
+    edges_done = set()
+    while len(edges_to_do) != 0:
+        current_edge = edges_to_do.pop()
+        edges_done.add(current_edge)
+        adjacent_edges = {current_edge}
+        for potential_edge in current_edge.hooked:
+            if int(potential_edge) >= 5:
+                adjacent_edges
+
+
 if __name__ == "__main__":
     pass
