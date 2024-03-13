@@ -1,4 +1,5 @@
 from typing import Optional
+from functools import partial
 
 
 class LinkedTableNode:
@@ -7,7 +8,7 @@ class LinkedTableNode:
         if hooked is not None and len(hooked) <= 8:
             for node in hooked:
                 node.hook(self)
-        else:
+        elif hooked is not None:
             raise ValueError("The set of hooked nodes is too large")
         self.state: bool = state
 
@@ -28,7 +29,7 @@ class LinkedTableCoordSystem:
         self.left: LinkedTableNode = left
         self.origin: LinkedTableNode = origin
 
-    def __getitem__(self, item: tuple[int] | slice) -> LinkedTableNode:
+    def __getitem__(self, coordinates: tuple[int]) -> LinkedTableNode:
         pass  # TODO coordinate getter system
 
 
@@ -53,20 +54,26 @@ def create_odd_base() -> set[LinkedTableNode]:
         current_corner.hook(current_edge)
         if i > 0:
             current_edge.hook(corners[i - 1])
+            current_edge.hook(edges[i-1])
         if i == 3:
             current_corner.hook(edges[0])
+            current_edge.hook(edges[0])
+        edges.append(current_edge)
+        corners.append(current_corner)
     surroundings: set[LinkedTableNode] = set(edges).union(set(corners))
     center = LinkedTableNode(hooked=surroundings)
     surroundings.add(center)
     return surroundings
 
 
-def create_square(side_length: int) -> LinkedTableCoordSystem:
+def create_square(side_length: int) -> tuple[LinkedTableCoordSystem, set[LinkedTableNode]]:
     if side_length % 2 == 0:
         base: set[LinkedTableNode] = create_even_base()
         origin: LinkedTableNode = next(iter(base))  # select an element from the base set
         up: LinkedTableNode = next(iter(origin.hooked))
         left: LinkedTableNode = next(iter(origin.hooked.intersection(up.hooked)))
+        side_length -= 2
+
     else:
         base: set[LinkedTableNode] = create_odd_base()
         edges: set[LinkedTableNode] = set()
@@ -78,12 +85,19 @@ def create_square(side_length: int) -> LinkedTableCoordSystem:
                     edges.add(node)
         up: LinkedTableNode = next(iter(edges))
         left: LinkedTableNode = next(iter(edges.intersection(up.hooked)))
+        side_length -= 3
 
-    # TODO expand the base
-    return LinkedTableCoordSystem(origin, up, left)
+    while side_length > 0:
+        expand(base)
+        side_length -= 2
+
+    # TODO Link edges
+
+    return LinkedTableCoordSystem(origin, up, left), base
 
 
 def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
+    # TODO fix even base bug
     corners: set[LinkedTableNode] = set()
     edges_to_do = set()
     for potential_corner in base:
@@ -98,20 +112,28 @@ def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
         raise ValueError('Invalid input base: does not have 4 corners.')
 
     edges_done = set()
+    hooks_to_do: set[tuple[LinkedTableNode, LinkedTableNode]] = set()
     while len(edges_to_do) != 0:
-        current_edge = edges_to_do.pop()
+        current_edge = next(iter(edges_to_do))
+        edges_to_do.remove(current_edge)
         edges_done.add(current_edge)
-        adjacent_edges = {current_edge}
+        adjacent_edges = set()
         for potential_edge in current_edge.hooked:
             if int(potential_edge) >= 5:
                 adjacent_edges.add(potential_edge)
                 if potential_edge not in edges_done:
                     edges_to_do.add(potential_edge)
             new_edge = LinkedTableNode(hooked=adjacent_edges)
+            hooks_to_do.add((new_edge, current_edge))
             edges_done.add(new_edge)
             base.add(new_edge)
+    for htd in hooks_to_do:
+        htd[0].hook(htd[1])
     return base
 
 
 if __name__ == "__main__":
-    pass
+    a = create_odd_base()
+    print(len(a))
+    b = expand(a)
+    print(len(a), len(b))
