@@ -1,5 +1,4 @@
 from typing import Optional
-from functools import partial
 
 
 class LinkedTableNode:
@@ -71,7 +70,7 @@ def create_square(side_length: int) -> tuple[LinkedTableCoordSystem, set[LinkedT
         base: set[LinkedTableNode] = create_even_base()
         origin: LinkedTableNode = next(iter(base))  # select an element from the base set
         up: LinkedTableNode = next(iter(origin.hooked))
-        left: LinkedTableNode = next(iter(origin.hooked.intersection(up.hooked)))
+        right: LinkedTableNode = next(iter(origin.hooked.intersection(up.hooked)))
         side_length -= 2
 
     else:
@@ -84,7 +83,7 @@ def create_square(side_length: int) -> tuple[LinkedTableCoordSystem, set[LinkedT
                 case 5:
                     edges.add(node)
         up: LinkedTableNode = next(iter(edges))
-        left: LinkedTableNode = next(iter(edges.intersection(up.hooked)))
+        right: LinkedTableNode = next(iter(edges.intersection(up.hooked)))
         side_length -= 3
 
     while side_length > 0:
@@ -93,17 +92,108 @@ def create_square(side_length: int) -> tuple[LinkedTableCoordSystem, set[LinkedT
 
     # TODO Link edges
 
-    return LinkedTableCoordSystem(origin, up, left), base
+    return LinkedTableCoordSystem(origin, up, right), base
+
+
+def expand_corner(corner: LinkedTableNode) -> set[LinkedTableNode]:
+    new_corner = LinkedTableNode()
+    new_edge_0 = LinkedTableNode()
+    new_edge_1 = LinkedTableNode()
+
+    edges_to_hook: list[LinkedTableNode] = []
+    for potential_edge in corner.hooked:
+        if int(potential_edge) == 5:
+            edges_to_hook.append(potential_edge)
+
+    new_corner.hook(corner)
+    new_corner.hook(new_edge_0)
+    new_corner.hook(new_edge_1)
+    new_edge_0.hook(corner)
+    new_edge_1.hook(corner)
+    new_edge_0.hook(edges_to_hook[0])
+    new_edge_1.hook(edges_to_hook[1])
+    return set(edges_to_hook)
+
+
+def expand_along(edge: LinkedTableNode) -> Optional[LinkedTableNode]:
+    node_under_current: Optional[LinkedTableNode] = None
+    node_under_next: Optional[LinkedTableNode] = None
+    for node in edge.hooked:
+        if int(node) == 7:
+            if node_under_current is not None:
+                raise ValueError("base structure invalid: too many 7-neighbour adjacencies")
+            node_under_current = node
+        if int(node) == 6:
+            if node_under_next is not None:
+                raise ValueError("base structure invalid: too many 6-neighbour adjacencies")
+            node_under_next = node
+        if node_under_next is not None and node_under_current is not None:
+            break
+
+    node_after_next: Optional[LinkedTableNode] = None
+    for node in node_under_next.hooked:
+        if int(node) == 5:
+            node_after_next = node
+            break
+    if node_after_next is None:
+        for node in node_under_next.hooked:
+            if int(node) == 6:
+                node_after_next = node
+                break
+        else:
+            raise ValueError("Invalid links in base table.")
+
+        node_under_other_end: Optional[LinkedTableNode] = None
+        node_other_end: Optional[LinkedTableNode] = None
+        for node in node_after_next.hooked:
+            if int(node) == 7:
+                node_under_other_end = node
+            if int(node) == 4:
+                node_other_end = node
+            if node_under_other_end is not None and node_other_end is not None:
+                break
+        else:
+            raise ValueError("Invalid links in base table")
+
+        adjacent_node = LinkedTableNode(hooked={node_under_current,
+                                                node_under_next,
+                                                node_after_next,
+                                                edge})
+        closing_node = LinkedTableNode(hooked={node_under_next,
+                                               node_after_next,
+                                               node_under_other_end,
+                                               node_other_end,
+                                               adjacent_node})
+        return None
+    else:
+        return LinkedTableNode(hooked={edge, node_under_current, node_under_next, node_after_next})
 
 
 def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
-    # TODO fix even base bug
-    corners: set[LinkedTableNode] = set()
-    edges_to_do = set()
+    # TODO fix even base bug/corner bug
+    start_corner: LinkedTableNode
     for potential_corner in base:
         if int(potential_corner) == 3:
+            start_corner = potential_corner
+            break
+    try:
+        new_corner = LinkedTableNode(hooked={start_corner})
+    except NameError:
+        raise ValueError("Provided base is invalid: has no corners.")
+
+    next_edge: LinkedTableNode
+    for potential_next_edge in start_corner.hooked:
+        if int(potential_next_edge) == 5:
+            next_edge = potential_next_edge
+            break
+    pass  # TODO
+
+
+"""        if int(potential_corner) == 3:
             corners.add(potential_corner)
-            potential_corner.hook(LinkedTableNode())
+            new_corner = LinkedTableNode()
+            potential_corner.hook(new_corner)
+            near_edges = 
             for potential_edge in potential_corner.hooked:
                 if int(potential_edge) == 5:
                     edges_to_do.add(potential_edge)
@@ -129,7 +219,7 @@ def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
             base.add(new_edge)
     for htd in hooks_to_do:
         htd[0].hook(htd[1])
-    return base
+    return base"""
 
 
 if __name__ == "__main__":
