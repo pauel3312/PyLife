@@ -97,23 +97,43 @@ def create_square(side_length: int) -> tuple[LinkedTableCoordSystem, set[LinkedT
 
 def expand_corner(corner: LinkedTableNode) -> list[LinkedTableNode]:
     new_corner = LinkedTableNode()
-    new_edge_0 = LinkedTableNode()
-    new_edge_1 = LinkedTableNode()
+    new_intermediary_edge_0 = LinkedTableNode()
+    new_intermediary_edge_1 = LinkedTableNode()
+    new_final_edge_0 = LinkedTableNode()
+    new_final_edge_1 = LinkedTableNode()
 
-    edges_to_hook: list[LinkedTableNode] = []
+    edges_to_hook_intermediary: list[LinkedTableNode] = []
     for potential_edge in corner.hooked:
         if len(potential_edge) == 5:
-            edges_to_hook.append(potential_edge)
+            edges_to_hook_intermediary.append(potential_edge)
+
+    edges_to_hook_final: list[LinkedTableNode] = []
+    for intermediary in edges_to_hook_intermediary:
+        for node in intermediary.hooked:
+            if len(node) == 5 and node not in edges_to_hook_intermediary:
+                edges_to_hook_final.append(node)
+                break
 
     new_corner.hook(corner)
-    new_corner.hook(new_edge_0)
-    new_corner.hook(new_edge_1)
-    new_edge_0.hook(corner)
-    new_edge_1.hook(corner)
-    new_edge_0.hook(edges_to_hook[0])
-    new_edge_1.hook(edges_to_hook[1])
+    new_corner.hook(new_intermediary_edge_0)
+    new_corner.hook(new_intermediary_edge_1)
+    new_intermediary_edge_0.hook(corner)
+    new_intermediary_edge_1.hook(corner)
+    new_intermediary_edge_0.hook(edges_to_hook_intermediary[0])
+    new_intermediary_edge_1.hook(edges_to_hook_intermediary[1])
+    new_intermediary_edge_0.hook(new_final_edge_0)
+    new_intermediary_edge_1.hook(new_final_edge_1)
 
-    return [new_corner, new_edge_0, new_edge_1]
+    new_final_edge_0.hook(corner)
+    new_final_edge_1.hook(corner)
+    new_final_edge_0.hook(edges_to_hook_intermediary[0])
+    new_final_edge_1.hook(edges_to_hook_intermediary[1])
+    new_final_edge_0.hook(edges_to_hook_final[0])
+    new_final_edge_1.hook(edges_to_hook_final[1])
+    # I know this can be done with a loop, but it makes more sense in my mind like this,
+    # and I would certainly make dumb mistakes if I made it a loop
+
+    return [new_corner, new_final_edge_0, new_final_edge_1]
 
 
 def expand_along(edge: LinkedTableNode) -> set[LinkedTableNode]:
@@ -171,26 +191,17 @@ def expand_along(edge: LinkedTableNode) -> set[LinkedTableNode]:
 
 
 def expand(base: set[LinkedTableNode]) -> set[LinkedTableNode]:
-    corners: list[LinkedTableNode] = []
+    corners: set[LinkedTableNode] = set()
     for potential_corner in base:
         if len(potential_corner) == 3:
-            corners.append(potential_corner)
+            corners.add(potential_corner)
     if len(corners) != 4:
         raise ValueError("Provided base is invalid: does not have exactly 4 corners")
 
     start_corner = next(iter(corners))
+    start_expanded = expand_corner(start_corner)
 
-    next_edge: LinkedTableNode
-    for potential_next_edge in start_corner.hooked:
-        if len(potential_next_edge) == 5:
-            next_edge = potential_next_edge
-            break
-    else:
-        raise ValueError("Provided base is invalid: has no edges near corners.")
-
-    expanded_corners = set()
-
-    pass  # TODO
+    pass  # TODO Expansion logic, must stop right on top of the 2 corners that are nearest to start_corner.
 
 
 if __name__ == "__main__":
